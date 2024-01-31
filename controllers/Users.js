@@ -25,7 +25,7 @@ const getSpesificUsersGallery = async (req, res) => {
       include: [
         {
           model: Users,
-          attributes: ["id", "name","email"],
+          attributes: ["id", "name", "email"],
           required: true,
         },
       ],
@@ -86,6 +86,33 @@ const CreateUser = async (req, res) => {
       gender: gender,
       image: `images/${req.file.filename}`,
     });
+    res.json({ msg: "Register Berhasil", code: 200 });
+  } catch (error) {
+    console.log(error);
+    res.json({ msg: "error!", code: 400 });
+  }
+};
+
+const UpdateUserGallery = async (req, res) => {
+  const { user_id } = req.body;
+  console.log({user_id})
+  const files = req.files;
+  try {
+    if (files.length > 0) {
+      await UsersGallery.destroy({
+        where: {
+          user_id: user_id,
+        },
+      });
+      console.log(files)
+      for (let i = 0; i < files.length; i++) {
+        await UsersGallery.create({
+          user_id: user_id,
+          image_file: `images/${files[i].filename}`,
+        });
+      }
+    }
+
     res.json({ msg: "Register Berhasil", code: 200 });
   } catch (error) {
     console.log(error);
@@ -217,6 +244,7 @@ const Update = async (req, res) => {
 module.exports = {
   getUsersGallery,
   getSpesificUsersGallery,
+  UpdateUserGallery,
   getUsers,
   Register,
   CreateUser,

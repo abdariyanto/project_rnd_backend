@@ -8,6 +8,7 @@ const {
   Update,
   Delete,
   CreateUser,
+  UpdateUserGallery,
   getUsersGallery,
   getSpesificUsersGallery,
 } = require("../controllers/Users.js");
@@ -24,7 +25,7 @@ router.post("/get_user_gallery", verifyToken, getSpesificUsersGallery);
 router.post("/delete_user", verifyToken, Delete);
 router.post("/update_user", verifyToken, uploadSingle, Update);
 router.post("/create_user", uploadSingle, CreateUser);
-router.post("/create_user_gallery", uploadMultiple, CreateUser);
+router.post("/create_user_gallery", uploadMultiple, UpdateUserGallery);
 router.post("/register", Register);
 router.post("/login", Login);
 router.post("/logout", Logout);
