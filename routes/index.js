@@ -11,6 +11,7 @@ const {
   UpdateUserGallery,
   getUsersGallery,
   getSpesificUsersGallery,
+  getDataGender,
 } = require("../controllers/Users.js");
 
 const { uploadSingle, uploadMultiple } = require("../middleware/multer.js");
@@ -21,6 +22,7 @@ const router = express.Router();
 
 router.get("/users", verifyToken, getUsers);
 router.get("/users_gallery", verifyToken, getUsersGallery);
+router.get("/data_gender", verifyToken, getDataGender);
 router.post("/get_user_gallery", verifyToken, getSpesificUsersGallery);
 router.post("/delete_user", verifyToken, Delete);
 router.post("/update_user", verifyToken, uploadSingle, Update);

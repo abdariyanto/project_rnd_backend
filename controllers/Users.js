@@ -1,7 +1,7 @@
 const { Users, UsersGallery } = require("../models/UserModel.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const { Sequelize } = require("sequelize");
 const getUsersGallery = async (req, res) => {
   try {
     const users = await Users.findAll({
@@ -49,26 +49,44 @@ const getUsers = async (req, res) => {
     res.json({ msg: "Error!" + JSON.stringify(error) });
   }
 };
-const Register = async (req, res) => {
-  const { name, email, password, confPassword } = req.body;
-
-  if (password !== confPassword)
-    return res.json({
-      msg: "Password dan Confirm Password tidak cocok",
-      code: 400,
-    });
-  const salt = await bcrypt.genSalt();
-  const hashPassword = await bcrypt.hash(password, salt);
+const getDataGender = async (req, res) => {
   try {
-    await Users.create({
-      name: name,
-      email: email,
-      password: hashPassword,
+    const genderCounts = await Users.findAll({
+      attributes: [
+        [Sequelize.fn("COUNT", Sequelize.col("gender")), "count"],
+        [
+          Sequelize.fn("IF", Sequelize.col("gender") == 1, "Male", "Female"),
+          "name",
+        ],
+      ],
+      group: ["gender"],
     });
-    res.json({ msg: "Register Berhasil", code: 200 });
+
+    const userActiveCount = await Users.findAll({
+      attributes: [
+        [Sequelize.fn("COUNT", Sequelize.col("is_active")), "count"],
+        [
+          Sequelize.fn("IF", Sequelize.col("is_active") == 1, "Active", "Not Active"),
+          "name",
+        ],
+      ],
+      group: ["is_active"],
+    });
+
+    res.json({ code: 200, genderCounts ,userActiveCount});
   } catch (error) {
     console.log(error);
-    res.json({ msg: "error!", code: 400 });
+    res.json({ msg: "Error!" + JSON.stringify(error) });
+  }
+};
+const getUserActive = async (req, res) => {
+  try {
+    
+
+    res.json({ code: 200, userActiveCount });
+  } catch (error) {
+    console.log(error);
+    res.json({ msg: "Error!" + JSON.stringify(error) });
   }
 };
 
@@ -95,7 +113,7 @@ const CreateUser = async (req, res) => {
 
 const UpdateUserGallery = async (req, res) => {
   const { user_id } = req.body;
-  console.log({user_id})
+  console.log({ user_id });
   const files = req.files;
   try {
     if (files.length > 0) {
@@ -104,7 +122,7 @@ const UpdateUserGallery = async (req, res) => {
           user_id: user_id,
         },
       });
-      console.log(files)
+      console.log(files);
       for (let i = 0; i < files.length; i++) {
         await UsersGallery.create({
           user_id: user_id,
@@ -113,6 +131,29 @@ const UpdateUserGallery = async (req, res) => {
       }
     }
 
+    res.json({ msg: "Register Berhasil", code: 200 });
+  } catch (error) {
+    console.log(error);
+    res.json({ msg: "error!", code: 400 });
+  }
+};
+
+const Register = async (req, res) => {
+  const { name, email, password, confPassword } = req.body;
+
+  if (password !== confPassword)
+    return res.json({
+      msg: "Password dan Confirm Password tidak cocok",
+      code: 400,
+    });
+  const salt = await bcrypt.genSalt();
+  const hashPassword = await bcrypt.hash(password, salt);
+  try {
+    await Users.create({
+      name: name,
+      email: email,
+      password: hashPassword,
+    });
     res.json({ msg: "Register Berhasil", code: 200 });
   } catch (error) {
     console.log(error);
@@ -244,6 +285,7 @@ const Update = async (req, res) => {
 module.exports = {
   getUsersGallery,
   getSpesificUsersGallery,
+  getDataGender,
   UpdateUserGallery,
   getUsers,
   Register,
