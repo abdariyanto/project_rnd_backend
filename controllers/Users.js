@@ -55,25 +55,24 @@ const getDataGender = async (req, res) => {
       attributes: [
         [Sequelize.fn("COUNT", Sequelize.col("gender")), "count"],
         [
-          Sequelize.fn("IF", Sequelize.col("gender") == 1, "Male", "Female"),
+          Sequelize.literal("IF(gender = 1, 'Male', 'Female')"),
           "name",
         ],
       ],
       group: ["gender"],
     });
-
     const userActiveCount = await Users.findAll({
       attributes: [
         [Sequelize.fn("COUNT", Sequelize.col("is_active")), "count"],
         [
-          Sequelize.fn("IF", Sequelize.col("is_active") == 1, "Active", "Not Active"),
+          Sequelize.literal("IF(is_active = 1, 'Active', 'Not Active')"),
           "name",
         ],
       ],
       group: ["is_active"],
     });
 
-    res.json({ code: 200, genderCounts ,userActiveCount});
+    res.json({ code: 200, genderCounts, userActiveCount });
   } catch (error) {
     console.log(error);
     res.json({ msg: "Error!" + JSON.stringify(error) });
@@ -81,8 +80,6 @@ const getDataGender = async (req, res) => {
 };
 const getUserActive = async (req, res) => {
   try {
-    
-
     res.json({ code: 200, userActiveCount });
   } catch (error) {
     console.log(error);
