@@ -2,6 +2,8 @@ const { Users, UsersGallery } = require("../models/UserModel.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { Sequelize } = require("sequelize");
+const XLSX = require("xlsx");
+
 const getUsersGallery = async (req, res) => {
   try {
     const users = await Users.findAll({
@@ -49,15 +51,12 @@ const getUsers = async (req, res) => {
     res.json({ msg: "Error!" + JSON.stringify(error) });
   }
 };
-const getDataGender = async (req, res) => {
+const getDataChart = async (req, res) => {
   try {
     const genderCounts = await Users.findAll({
       attributes: [
         [Sequelize.fn("COUNT", Sequelize.col("gender")), "count"],
-        [
-          Sequelize.literal("IF(gender = 1, 'Male', 'Female')"),
-          "name",
-        ],
+        [Sequelize.literal("IF(gender = 1, 'Male', 'Female')"), "name"],
       ],
       group: ["gender"],
     });
@@ -78,9 +77,27 @@ const getDataGender = async (req, res) => {
     res.json({ msg: "Error!" + JSON.stringify(error) });
   }
 };
-const getUserActive = async (req, res) => {
+const getDownloadExcel = async (req, res) => {
   try {
-    res.json({ code: 200, userActiveCount });
+    const users = await Users.findAll({
+      attributes: ["id", "name", "email", 'is_active'],
+    });
+   
+    const dataAsArrayOfArrays = users.map((item) => {
+      return [item.name, item.email, item.is_active == 1 ? 'Active' : 'Not Active'];
+    });
+    const header = ["Name", "Email", "Active"];
+    const completeData = [header, ...dataAsArrayOfArrays];
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.aoa_to_sheet(completeData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    const excelBuffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    // Set response headers
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=SampleData.xlsx');
+  
+    // Send the Excel file as a response
+    res.send(excelBuffer);
   } catch (error) {
     console.log(error);
     res.json({ msg: "Error!" + JSON.stringify(error) });
@@ -282,7 +299,8 @@ const Update = async (req, res) => {
 module.exports = {
   getUsersGallery,
   getSpesificUsersGallery,
-  getDataGender,
+  getDataChart,
+  getDownloadExcel,
   UpdateUserGallery,
   getUsers,
   Register,
