@@ -136,7 +136,7 @@ const UpdateUserGallery = async (req, res) => {
           user_id: user_id,
         },
       });
-      console.log(files);
+      
       for (let i = 0; i < files.length; i++) {
         await UsersGallery.create({
           user_id: user_id,
